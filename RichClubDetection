@@ -1,0 +1,123 @@
+'''
+Rich Club分析-检验组水平上的静态脑功能连接矩阵中是否存在club结构
+'''
+import os 
+import matplotlib.pyplot as plt
+import numpy as np
+
+def mainAnalysis(root_path):
+    nan_default = {
+    'NaN': 0
+    }
+    DM_clubs = []
+    HC_clubs = []
+    for group in os.listdir(root_path):  
+        if group == "Group1":
+            for file in os.listdir(root_path + "/" + group):
+                if file.startswith("phi_norm"):
+                    with open(root_path + "/" + group + "/" + file,'r') as f:
+                        for line in f.readlines():
+                            data = line.strip().split("\t")
+                            row = []
+                            for e in data:
+                                row.append(eval(e,nan_default))
+                            DM_clubs.append(row)
+       
+        else:
+            for file in os.listdir(root_path + "/" + group):
+                if file.startswith("phi_norm"):
+                    with open(root_path + "/" + group + "/" + file,'r') as f:
+                        for line in f.readlines():
+                            data = line.strip().split("\t")
+                            row = []
+                            for e in data:
+                                row.append(eval(e,nan_default))
+                            HC_clubs.append(row)
+    DM_counts = []                       
+    for row in range(0,len(DM_clubs)):
+        values = DM_clubs[row]
+        count = 0
+        for i in range(0,len(values)):
+            if values[i] != 0:
+                count = count + 1
+        DM_counts.append(count)
+        
+    HC_counts = []                       
+    for row in range(0,len(HC_clubs)):
+        values = HC_clubs[row]
+        count = 0
+        for i in range(0,len(values)):
+            if values[i] != 0:
+                count = count + 1
+        HC_counts.append(count)
+        
+    DM_flag = True
+    HC_flag = True
+    for e in DM_counts:
+        if count == 0:
+            DM_flag = False
+            
+    for e in HC_counts:
+        if count == 0:
+            HC_flag = False
+    
+    if DM_flag:
+        print("DM组在0.1~0.5（0.01）的所有阈值下均存在rich club结构，可进行相关分析。")
+    else:
+        print("不可以进行rich club分析。")
+        
+    if HC_flag:
+        print("HC组在0.1~0.5（0.01）的所有阈值下均存在rich club结构，可进行相关分析。")
+    else:
+        print("不可以进行rich club分析。")
+        
+def richClubVisualization(root_path,sparsity_index):
+    nan_default = {
+    'NaN': 0
+    }
+    x = np.arange(1,246)
+    for group in os.listdir(root_path):
+        if group == "Group1":
+            file = root_path + "/" + group + "/" + "phi_norm_Thres" + sparsity_index + ".txt"
+            with open(file,'r') as f:
+                for line in f.readlines():
+                    data = line.strip().split("\t")
+                    row = []
+                    for e in data:
+                        row.append(eval(e,nan_default))
+                    x_end = []
+                    new_row = []
+                    for index in range(0,len(row)):
+                        if row[index] != 0:
+                            x_end.append(index + 1)
+                            new_row.append(row[index])
+                            
+                    fig, ax = plt.subplots()
+                    ax.plot(x_end, new_row, color='red', label='DM', linestyle='-',marker = "+",markersize = 2) 
+                    
+        else:
+            file = root_path + "/" + group + "/" + "phi_norm_Thres" + sparsity_index + ".txt"
+            with open(file,'r') as f:
+                for line in f.readlines():
+                    data = line.strip().split("\t")
+                    row = []
+                    for e in data:
+                        row.append(eval(e,nan_default))
+                    x_end = []
+                    new_row = []
+                    for index in range(0,len(row)):
+                        if row[index] != 0:
+                            x_end.append(index + 1)
+                            new_row.append(row[index])
+                            
+                    ax.plot(x_end, new_row, color='blue', label='HC', linestyle='-',marker = "+",markersize = 2) 
+                    ax.set_xlabel('Degree K') #设置x轴名称 x label
+                    ax.set_ylabel('Normalized Coefficienct') #设置y轴名称 y label
+                    ax.legend() #自动检测要在图例中显示的元素，并且显示
+                    plt.show() #图形可视化
+      
+if __name__ == '__main__':
+    root_path = "I:/T2DM/DM_HC_RichClub/RichClub"
+    mainAnalysis(root_path)
+    sparsity_index = "028"
+    richClubVisualization(root_path,sparsity_index)
